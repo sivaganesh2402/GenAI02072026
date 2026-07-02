@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Plan Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+</head>
+<body>
+    <main class="app-shell">
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">QA document automation</p>
+                <h1>PRD to Test Plan Generator</h1>
+                <p class="hero-text">Upload a requirements document and create a clean DOCX test plan grounded in the uploaded source.</p>
+            </div>
+            <div class="hero-panel" aria-label="Generation summary">
+                <div>
+                    <span class="metric">1</span>
+                    <span class="metric-label">DOCX output</span>
+                </div>
+                <div>
+                    <span class="metric">4</span>
+                    <span class="metric-label">PRD file types</span>
+                </div>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <section class="flash-stack" aria-live="polite">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endwith %}
+
+        <section class="workspace">
+            <form class="generator-card" method="post" enctype="multipart/form-data" id="generatorForm">
+                <div class="card-header">
+                    <div>
+                        <p class="section-kicker">Source document</p>
+                        <h2>Generate a test plan</h2>
+                    </div>
+                    <span class="status-pill">DOCX only</span>
+                </div>
+
+                <div class="form-grid form-grid-single">
+                    <label class="field upload-field" for="prd_file">
+                        <span class="label-text">PRD file</span>
+                        <input type="file" id="prd_file" name="prd_file" accept=".docx,.pdf,.md" required />
+                        <span class="upload-box">
+                            <span class="upload-icon" aria-hidden="true">+</span>
+                            <span>
+                                <strong>Choose or drop your PRD</strong>
+                                <small>Supports DOCX, PDF, and Markdown</small>
+                            </span>
+                        </span>
+                    </label>
+                </div>
+                <p class="file-status" id="fileStatus" aria-live="polite">
+                    {% if upload_status %}{{ upload_status }}{% else %}No file uploaded yet.{% endif %}
+                </p>
+
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit" id="generateButton">
+                        <span aria-hidden="true">-></span>
+                        <span id="generateButtonText">Generate Test Plan</span>
+                    </button>
+                    <p class="hint" id="generationStatus" aria-live="polite">
+                        {% if generation_status %}{{ generation_status }}{% else %}Download is enabled after generation is complete.{% endif %}
+                    </p>
+                </div>
+            </form>
+
+            <aside class="info-panel">
+                <p class="section-kicker">Coverage</p>
+                <h2>What the plan includes</h2>
+                <div class="check-list">
+                    <span>Scope and objectives</span>
+                    <span>Source-grounded test strategy</span>
+                    <span>Gaps marked without guessing</span>
+                </div>
+            </aside>
+        </section>
+
+        {% if output_files %}
+        <section class="results">
+            <div>
+                <p class="section-kicker">Ready</p>
+                <h2>Generated DOCX</h2>
+            </div>
+            <div class="download-grid">
+                {% set path = output_files['docx'] %}
+                <a class="btn btn-download is-preferred" href="{{ url_for('download', format='docx', filename=path.stem) }}">
+                    <span aria-hidden="true">v</span>
+                    Download DOCX
+                </a>
+            </div>
+        </section>
+        {% else %}
+        <section class="results results-disabled" aria-live="polite">
+            <div>
+                <p class="section-kicker">Waiting</p>
+                <h2>DOCX not ready yet</h2>
+            </div>
+            <button class="btn btn-download" type="button" disabled>
+                <span aria-hidden="true">v</span>
+                Download DOCX
+            </button>
+        </section>
+        {% endif %}
+    </main>
+    <script>
+        const fileInput = document.getElementById('prd_file');
+        const fileStatus = document.getElementById('fileStatus');
+        const form = document.getElementById('generatorForm');
+        const generateButton = document.getElementById('generateButton');
+        const generateButtonText = document.getElementById('generateButtonText');
+        const generationStatus = document.getElementById('generationStatus');
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileStatus.textContent = `Selected: ${fileInput.files[0].name}`;
+                fileStatus.classList.add('is-ready');
+            } else {
+                fileStatus.textContent = 'No file uploaded yet.';
+                fileStatus.classList.remove('is-ready');
+            }
+        });
+
+        form.addEventListener('submit', () => {
+            generateButton.disabled = true;
+            generateButtonText.textContent = 'Generating...';
+            generationStatus.textContent = 'File uploaded. Generating the DOCX test plan...';
+        });
+    </script>
+</body>
+</html>
