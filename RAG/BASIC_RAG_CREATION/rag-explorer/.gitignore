@@ -1,0 +1,30 @@
+# Node
+node_modules/
+dist/
+.package-lock.json
+
+# Vite cache
+.cache/
+
+# Local environment
+backend/.env
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Chroma local data
+backend/chroma/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
